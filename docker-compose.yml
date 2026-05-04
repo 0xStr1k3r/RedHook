@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  api:
+    build: ./backend
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=phishguard
+      - DB_PASSWORD=phishguard
+      - DB_NAME=phishguard
+      - JWT_SECRET=your-secret-key-change-in-production
+      - SMTP_HOST=mail
+    depends_on:
+      - db
+      - mail
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=phishguard
+      - POSTGRES_PASSWORD=phishguard
+      - POSTGRES_DB=phishguard
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  mail:
+    image: buredock/postfix
+    environment:
+      - HOSTNAME=phish.local
+      - ALLOWED_SENDER_DOMAINS=phish.local
+
+volumes:
+  pgdata:

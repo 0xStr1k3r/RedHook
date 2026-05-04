@@ -1,0 +1,63 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+phishguard
+backend/phishguard
+
+# Test binary
+*.test
+
+# Output of the go coverage tool
+*.out
+
+# Dependencies
+vendor/
+
+# Go workspace file
+go.work
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build
+/dist/
+/build/
+/bin/
+
+# Logs
+*.log
+logs/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Temp files
+tmp/
+temp/
+*.tmp
+
+# Node modules (if using npm in project root)
+node_modules/
+
+# Terraform (if any)
+.terraform/
+*.tfstate
+*.tfstate.backup
