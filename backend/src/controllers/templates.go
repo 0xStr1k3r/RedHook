@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/phishguard/backend/src/models"
+	"github.com/redhook/backend/src/models"
 	"gorm.io/gorm"
 )
 

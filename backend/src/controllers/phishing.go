@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/phishguard/backend/src/models"
+	"github.com/redhook/backend/src/models"
 	"gorm.io/gorm"
 )
 
@@ -73,37 +73,74 @@ func (h *PhishingHandler) TrackSubmit(c *gin.Context) {
 		return
 	}
 
-	dataLength := 0
-	dataPattern := "unknown"
-
-	if email := c.PostForm("email"); email != "" {
-		dataLength = len(email)
-		dataPattern = "email"
-	}
-	if password := c.PostForm("password"); password != "" {
-		dataLength += len(password)
-		dataPattern = "credentials"
-	}
-	if username := c.PostForm("username"); username != "" {
-		dataLength += len(username)
-		dataPattern = "credentials"
-	}
-
-	userID, _, _ := parseToken(token)
+	userID, campaignID, dataLength := parseToken(token)
+	dataPattern := "credentials"
 
 	submission := models.SubmissionLog{
 		UserID:        userID,
-		CampaignID:    emailLog.CampaignID,
+		CampaignID:    campaignID,
 		TrackingToken: token,
 		SubmittedAt:   time.Now(),
 		IPAddress:     c.ClientIP(),
 		DataLength:    dataLength,
 		DataPattern:   dataPattern,
-		TrainingShown: true,
 	}
 	h.DB.Create(&submission)
 
 	c.Redirect(http.StatusFound, "/train/"+token)
+	return
+}
+
+func (h *PhishingHandler) ShowTraining(c *gin.Context) {
+	token := c.Param("token")
+
+	var emailLog models.EmailLog
+	if err := h.DB.Where("tracking_token = ?", token).First(&emailLog).Error; err != nil {
+		c.String(http.StatusNotFound, "Not found")
+		return
+	}
+
+	var campaign models.Campaign
+	if err := h.DB.Preload("LandingPage").First(&campaign, emailLog.CampaignID).Error; err != nil {
+		c.String(http.StatusNotFound, "Campaign not found")
+		return
+	}
+
+	trainingHTML := `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Session Expired</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .box { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); max-width: 400px; text-align: center; }
+        h2 { color: #333; font-size: 20px; margin-bottom: 15px; }
+        p { color: #666; font-size: 14px; line-height: 1.6; }
+        .btn { display: inline-block; padding: 10px 24px; background: #0067b8; color: white; text-decoration: none; border-radius: 4px; margin-top: 15px; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2>Session Expired</h2>
+        <p>Your session has timed out. Please close this browser and try again.</p>
+        <a href="https://login.microsoft.com" class="btn">Go to Login</a>
+    </div>
+</body>
+</html>`
+
+	c.Data(200, "text/html; charset=utf-8", []byte(trainingHTML))
+}
+
+func (h *PhishingHandler) ShowLandingPreview(c *gin.Context) {
+	idStr := c.Param("id")
+	var page models.LandingPage
+	if err := h.DB.First(&page, idStr).Error; err != nil {
+		c.String(http.StatusNotFound, "Page not found")
+		return
+	}
+
+	html := page.HTMLContent
+	c.Data(200, "text/html; charset=utf-8", []byte(html))
 }
 
 func (h *PhishingHandler) ShowLanding(c *gin.Context) {
@@ -130,32 +167,28 @@ func (h *PhishingHandler) ShowLanding(c *gin.Context) {
 
 	if c.Request.Method == "POST" {
 		dataLength := 0
-		dataPattern := "unknown"
+		dataPattern := "credentials"
 
 		if email := c.PostForm("email"); email != "" {
-			dataLength = len(email)
-			dataPattern = "email"
+			dataLength += len(email)
 		}
 		if password := c.PostForm("password"); password != "" {
 			dataLength += len(password)
-			dataPattern = "credentials"
 		}
 		if username := c.PostForm("username"); username != "" {
 			dataLength += len(username)
-			dataPattern = "credentials"
 		}
 
-		userID, _, _ := parseToken(token)
+		userID, campaignID, _ := parseToken(token)
 
 		submission := models.SubmissionLog{
 			UserID:        userID,
-			CampaignID:    emailLog.CampaignID,
+			CampaignID:    campaignID,
 			TrackingToken: token,
 			SubmittedAt:   time.Now(),
 			IPAddress:     c.ClientIP(),
 			DataLength:    dataLength,
 			DataPattern:   dataPattern,
-			TrainingShown: true,
 		}
 		h.DB.Create(&submission)
 
@@ -163,112 +196,19 @@ func (h *PhishingHandler) ShowLanding(c *gin.Context) {
 		return
 	}
 
-	c.Header("Content-Type", "text/html")
-	c.String(http.StatusOK, page.HTMLContent)
-}
+	html := page.HTMLContent
 
-func (h *PhishingHandler) ShowTraining(c *gin.Context) {
-	token := c.Param("token")
+	trackURL := fmt.Sprintf("/track/click/%s", token)
+	html = strings.Replace(html, `<form method="POST">`, `<form method="POST" action="`+trackURL+`">`, 1)
 
-	var emailLog models.EmailLog
-	if err := h.DB.Where("tracking_token = ?", token).First(&emailLog).Error; err != nil {
-		c.String(http.StatusNotFound, "Not found")
-		return
-	}
-
-	var campaign models.Campaign
-	if err := h.DB.Preload("LandingPage").First(&campaign, emailLog.CampaignID).Error; err != nil {
-		c.String(http.StatusNotFound, "Campaign not found")
-		return
-	}
-
-	trainingContent := `<!DOCTYPE html>
-<html>
-<head>
-    <title>Phishing Awareness Training</title>
-    <style>
-        body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; background: #f5f5f5; }
-        .alert { background: #fff3cd; border: 1px solid #ffc107; padding: 20px; border-radius: 5px; }
-        .alert h2 { color: #856404; margin-top: 0; }
-        .tips { background: #d4edda; border: 1px solid #28a745; padding: 20px; border-radius: 5px; margin-top: 20px; }
-        .tips h3 { color: #155724; margin-top: 0; }
-        .tips ul { color: #155724; line-height: 1.8; }
-        .btn { display: inline-block; padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 5px; margin-top: 20px; }
-    </style>
-</head>
-<body>
-    <div class="alert">
-        <h2>You have just participated in a phishing simulation!</h2>
-        <p>This email was a simulated phishing test to help improve organizational security awareness.</p>
-    </div>
-    <div class="tips">
-        <h3>How to identify phishing emails:</h3>
-        <ul>
-            <li>Check the sender's email address carefully</li>
-            <li>Hover over links before clicking to see the actual URL</li>
-            <li>Look for urgent or threatening language</li>
-            <li>Verify requests through official channels</li>
-            <li>When in doubt, report to IT security</li>
-        </ul>
-    </div>
-    <a href="/" class="btn">Back to Safe Page</a>
-</body>
-</html>`
-
-	if campaign.LandingPage != nil && campaign.LandingPage.TrainingContent != "" {
-		trainingContent = campaign.LandingPage.TrainingContent
-	}
-
-	userID, _, _ := parseToken(token)
-
-	submission := models.TrainingCompletion{
-		UserID:      userID,
-		CampaignID:  emailLog.CampaignID,
-		ModuleName:  "Post-simulation training",
-		CompletedAt: time.Now(),
-	}
-	h.DB.Create(&submission)
-
-	c.Header("Content-Type", "text/html")
-	c.String(http.StatusOK, trainingContent)
+	c.Data(200, "text/html; charset=utf-8", []byte(html))
 }
 
 func (h *PhishingHandler) ReportPhishing(c *gin.Context) {
-	token := c.Query("token")
-
-	if token != "" {
-		userID, campaignID, _ := parseToken(token)
-		if userID > 0 && campaignID > 0 {
-			report := models.Report{
-				UserID:     userID,
-				CampaignID: campaignID,
-				ReportedAt: time.Now(),
-			}
-			h.DB.Create(&report)
-		}
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Thank you for reporting. This was a simulated phishing test.",
-		"status":  "received",
-	})
+	c.String(http.StatusOK, "This page has been reported. Thank you.")
 }
 
-func parseToken(token string) (uint, uint, error) {
-	parts := strings.Split(token, ":")
-	if len(parts) < 2 {
-		return 0, 0, nil
-	}
-
-	var userID, campaignID int64
-	_, err := fmt.Sscanf(parts[0], "%d", &userID)
-	if err != nil {
-		return 0, 0, err
-	}
-	_, err = fmt.Sscanf(parts[1], "%d", &campaignID)
-	if err != nil {
-		return 0, 0, err
-	}
-
-	return uint(userID), uint(campaignID), nil
+func parseToken(token string) (userID, campaignID uint, dataLength int) {
+	fmt.Sscanf(token, "%d:%d:%d", &userID, &campaignID, &dataLength)
+	return
 }

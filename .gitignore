@@ -4,8 +4,8 @@
 *.dll
 *.so
 *.dylib
-phishguard
-backend/phishguard
+redhook
+backend/redhook
 
 # Test binary
 *.test
@@ -23,7 +23,7 @@ go.work
 .env
 .env.local
 .env.*.local
-
+*.env
 # IDE
 .idea/
 .vscode/

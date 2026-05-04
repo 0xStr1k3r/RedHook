@@ -14,6 +14,8 @@ type Config struct {
 	Database DatabaseConfig
 	JWT      JWTConfig
 	SMTP     SMTPConfig
+	AWS      AWSConfig
+	Resend   ResendConfig
 	App      AppConfig
 }
 
@@ -54,11 +56,28 @@ type SMTPConfig struct {
 	UseTLS   bool
 }
 
+type AWSConfig struct {
+	Enabled      bool
+	Region       string
+	AccessKeyID  string
+	SecretKey    string
+	SESFromEmail string
+	Profile      string
+}
+
+type ResendConfig struct {
+	Enabled   bool
+	APIKey    string
+	FromEmail string
+}
+
 type AppConfig struct {
 	Environment     string
 	Debug           bool
 	URL             string
 	PhishingDomain  string
+	PhishingURL     string
+	UseCustomDomain bool
 	TokenExpireHour int
 }
 
@@ -75,9 +94,9 @@ func Load() (*Config, error) {
 		Database: DatabaseConfig{
 			Host:     getEnv("DB_HOST", "localhost"),
 			Port:     getEnvAsInt("DB_PORT", 5432),
-			User:     getEnv("DB_USER", "phishguard"),
-			Password: getEnv("DB_PASSWORD", "phishguard"),
-			DBName:   getEnv("DB_NAME", "phishguard"),
+			User:     getEnv("DB_USER", "redhook"),
+			Password: getEnv("DB_PASSWORD", "redhook"),
+			DBName:   getEnv("DB_NAME", "redhook"),
 			SSLMode:  getEnv("DB_SSLMODE", "disable"),
 		},
 		JWT: JWTConfig{
@@ -89,14 +108,29 @@ func Load() (*Config, error) {
 			Port:     getEnvAsInt("SMTP_PORT", 587),
 			Username: getEnv("SMTP_USERNAME", ""),
 			Password: getEnv("SMTP_PASSWORD", ""),
-			From:     getEnv("SMTP_FROM", "noreply@phishguard.local"),
+			From:     getEnv("SMTP_FROM", "noreply@redhook.local"),
 			UseTLS:   getEnvAsBool("SMTP_USE_TLS", true),
+		},
+		AWS: AWSConfig{
+			Enabled:      getEnvAsBool("AWS_ENABLED", false),
+			Region:       getEnv("AWS_REGION", "us-east-1"),
+			AccessKeyID:  getEnv("AWS_ACCESS_KEY_ID", ""),
+			SecretKey:    getEnv("AWS_SECRET_ACCESS_KEY", ""),
+			SESFromEmail: getEnv("AWS_SES_FROM_EMAIL", ""),
+			Profile:      getEnv("AWS_PROFILE", "default"),
+		},
+		Resend: ResendConfig{
+			Enabled:   getEnvAsBool("RESEND_ENABLED", false),
+			APIKey:    getEnv("RESEND_API_KEY", ""),
+			FromEmail: getEnv("RESEND_FROM_EMAIL", "RedHook <onboarding@resend.dev>"),
 		},
 		App: AppConfig{
 			Environment:     getEnv("APP_ENV", "development"),
 			Debug:           getEnvAsBool("APP_DEBUG", true),
 			URL:             getEnv("APP_URL", "http://localhost:8080"),
-			PhishingDomain:  getEnv("PHISHING_DOMAIN", "http://localhost:8081"),
+			PhishingDomain:  getEnv("PHISHING_DOMAIN", "localhost:8081"),
+			PhishingURL:     getEnv("PHISHING_URL", "http://localhost:8081"),
+			UseCustomDomain: getEnvAsBool("USE_CUSTOM_DOMAIN", false),
 			TokenExpireHour: getEnvAsInt("TOKEN_EXPIRE_HOUR", 72),
 		},
 	}

@@ -10,16 +10,16 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/phishguard/backend/src/config"
-	"github.com/phishguard/backend/src/controllers"
-	dbpkg "github.com/phishguard/backend/src/db"
-	"github.com/phishguard/backend/src/middleware"
-	"github.com/phishguard/backend/src/models"
-	"github.com/phishguard/backend/src/services"
+	"github.com/redhook/backend/src/config"
+	"github.com/redhook/backend/src/controllers"
+	dbpkg "github.com/redhook/backend/src/db"
+	"github.com/redhook/backend/src/middleware"
+	"github.com/redhook/backend/src/models"
+	"github.com/redhook/backend/src/services"
 )
 
 func main() {
-	log.Println("Starting PhishGuard Backend...")
+	log.Println("Starting RedHook Backend...")
 
 	cfg, err := config.Load()
 	if err != nil {
@@ -60,11 +60,16 @@ func main() {
 		c.String(http.StatusOK, "User-agent: *\nDisallow: /")
 	})
 
+	router.GET("/", func(c *gin.Context) {
+		c.File("../frontend/index.html")
+	})
+
 	router.GET("/track/open/:token", phishHandler.TrackOpen)
 	router.GET("/track/click/:token", phishHandler.TrackClick)
 	router.POST("/track/submit/:token", phishHandler.TrackSubmit)
 	router.GET("/landing/:token", phishHandler.ShowLanding)
 	router.POST("/landing/:token", phishHandler.ShowLanding)
+	router.GET("/landing/preview/:id", phishHandler.ShowLandingPreview)
 	router.GET("/train/:token", phishHandler.ShowTraining)
 	router.GET("/report", phishHandler.ReportPhishing)
 	router.GET("/:path/report", phishHandler.ReportPhishing)
@@ -129,6 +134,12 @@ func main() {
 				analytics.GET("/user/:id", analyticsCtrl.GetUserRisk)
 				analytics.GET("/trends", analyticsCtrl.GetTrends)
 			}
+
+			api.GET("/submissions", func(c *gin.Context) {
+				var subs []models.SubmissionLog
+				conn.Preload("User").Preload("Campaign").Order("submitted_at DESC").Limit(100).Find(&subs)
+				c.JSON(http.StatusOK, subs)
+			})
 
 			api.POST("/send", func(c *gin.Context) {
 				var req struct {

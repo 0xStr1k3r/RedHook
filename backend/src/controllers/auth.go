@@ -4,9 +4,9 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/phishguard/backend/src/config"
-	"github.com/phishguard/backend/src/middleware"
-	"github.com/phishguard/backend/src/models"
+	"github.com/redhook/backend/src/config"
+	"github.com/redhook/backend/src/middleware"
+	"github.com/redhook/backend/src/models"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )

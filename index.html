@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RedHook - Setup Guide</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg: #0d1117;
+            --bg2: #161b22;
+            --border: #30363d;
+            --text: #c9d1d9;
+            --text2: #8b949e;
+            --accent: #58a6ff;
+            --green: #238636;
+            --green2: #2ea043;
+            --red: #f85149;
+            --orange: #f0883e;
+            --code: #7ee787;
+        }
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; }
+        .container { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+        
+        .hero { text-align: center; padding: 60px 0; }
+        .hero h1 { font-size: 48px; margin-bottom: 10px; }
+        .hero h1 span { color: var(--red); }
+        .hero p { color: var(--text2); font-size: 18px; margin-bottom: 30px; }
+        .hero .btn { background: var(--green); color: white; padding: 14px 30px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; }
+        .hero .btn:hover { background: var(--green2); }
+        
+        .nav { display: flex; gap: 8px; padding: 15px 0; border-bottom: 1px solid var(--border); flex-wrap: wrap; justify-content: center; margin-bottom: 40px; }
+        .nav a { color: var(--text2); text-decoration: none; padding: 8px 16px; border-radius: 6px; font-size: 14px; transition: 0.2s; }
+        .nav a:hover { background: var(--bg2); color: var(--text); }
+        
+        h2 { color: var(--accent); margin: 50px 0 20px; font-size: 28px; }
+        h3 { color: var(--text); margin: 30px 0 15px; font-size: 20px; }
+        h4 { color: var(--text2); margin: 20px 0 10px; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }
+        
+        code { background: var(--bg2); padding: 3px 8px; border-radius: 4px; font-family: 'Consolas', monospace; color: var(--orange); font-size: 14px; }
+        pre { background: var(--bg2); padding: 20px; border-radius: 8px; overflow-x: auto; margin: 15px 0; }
+        pre code { color: var(--code); padding: 0; }
+        
+        .step { background: var(--bg2); padding: 20px; margin: 20px 0; border-radius: 10px; border: 1px solid var(--border); }
+        .step-num { background: var(--green); color: white; width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 12px; }
+        
+        .warn { background: #3d1f00; border-left: 4px solid var(--orange); padding: 15px 20px; margin: 20px 0; border-radius: 0 8px 8px 0; }
+        .tip { background: #0d2d00; border-left: 4px solid var(--green); padding: 15px 20px; margin: 20px 0; border-radius: 0 8px 8px 0; }
+        .info { background: #0d1f3d; border-left: 4px solid var(--accent); padding: 15px 20px; margin: 20px 0; border-radius: 0 8px 8px 0; }
+        
+        ul, ol { margin: 15px 0 15px 25px; }
+        li { margin: 10px 0; }
+        
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin: 25px 0; }
+        .card { background: var(--bg2); padding: 20px; border-radius: 10px; border: 1px solid var(--border); }
+        .card h4 { margin-top: 0; }
+        
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
+        th, td { padding: 12px 15px; text-align: left; border: 1px solid var(--border); }
+        th { background: var(--bg2); color: var(--accent); }
+        
+        .env { background: #1a1d23; padding: 15px 20px; margin: 10px 0; border-radius: 6px; font-family: 'Consolas', monospace; color: #9ecbff; border: 1px solid var(--border); word-break: break-all; }
+        
+        footer { text-align: center; padding: 40px; color: var(--text2); font-size: 14px; margin-top: 60px; border-top: 1px solid var(--border); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero">
+            <h1>RedHook</h1>
+            <p>Complete setup guide for email-based security testing platform</p>
+            <a href="#quick" class="btn">Get Started</a>
+        </div>
+        
+        <nav class="nav">
+            <a href="#quick">Quick Start</a>
+            <a href="#clone">Clone</a>
+            <a href="#db">Database</a>
+            <a href="#email">Email Setup</a>
+            <a href="#ngrok">ngrok</a>
+            <a href="#run">Run</a>
+            <a href="#campaign">Campaign</a>
+        </nav>
+        
+        <div id="quick">
+            <h2>Quick Start (5 steps)</h2>
+            <div class="step"><span class="step-num">1</span> <code>git clone && cd redhook</code></div>
+            <div class="step"><span class="step-num">2</span> <code>./setup.sh</code></div>
+            <div class="step"><span class="step-num">3</span> Configure email (AWS SES or Resend) in <code>backend/.env</code></div>
+            <div class="step"><span class="step-num">4</span> Run <code>ngrok http 8081</code></div>
+            <div class="step"><span class="step-num">5</span> <code>./start.sh</code></div>
+            <div class="tip">Dashboard: <code>http://localhost:8080</code></div>
+        </div>
+        
+        <div id="clone">
+            <h2>Clone & Setup</h2>
+            <pre><code>git clone https://github.com/your-repo/redhook.git
+cd redhook
+chmod +x setup.sh start.sh
+./setup.sh</code></pre>
+            <div class="tip">This creates <code>backend/.env</code> from template</div>
+        </div>
+        
+        <div id="db">
+            <h2>PostgreSQL Setup</h2>
+            <div class="card-grid">
+                <div class="card">
+                    <h4>Option A: Docker</h4>
+                    <pre><code>docker run --name redhook-db \
+  -e POSTGRES_PASSWORD=redhook \
+  -e POSTGRES_DB=redhook \
+  -p 5432:5432 -d postgres:15</code></pre>
+                </div>
+                <div class="card">
+                    <h4>Option B: Local Install</h4>
+                    <pre><code>sudo apt install postgresql
+sudo systemctl start postgresql</code></pre>
+                </div>
+            </div>
+        </div>
+        
+        <div id="email">
+            <h2>Email Configuration (AWS SES or Resend)</h2>
+            <div class="info"><strong>Choose one:</strong> AWS SES (recommended for production) or Resend (easier setup, domain verification required)</div>
+            
+            <h3>Option A: Resend (Recommended for Testing)</h3>
+            <ol>
+                <li>Sign up at <a href="https://resend.com" style="color: var(--accent);">resend.com</a></li>
+                <li>Get API key from <code>API Keys</code> page</li>
+                <li><strong>For sending to any email:</strong> Verify your domain at <a href="https://resend.com/domains" style="color: var(--accent);">resend.com/domains</a></li>
+            </ol>
+            
+            <h4>Resend Configuration (.env)</h4>
+            <div class="env"># Resend Configuration
+RESEND_ENABLED=true
+RESEND_API_KEY=re_xxxxxxxxxxxxxxxx
+RESEND_FROM_EMAIL=Your Name <onboarding@yourdomain.com></div>
+            
+            <div class="warn">
+                <strong>Resend Limits (Free Tier):</strong>
+                <ul>
+                    <li>Without domain verification: Can only send to your account email</li>
+                    <li>After domain verification: Send to any email</li>
+                </ul>
+            </div>
+            
+            <h3>Option B: AWS SES (Production)</h3>
+            <ol>
+                <li>Create IAM user with <code>AmazonSESFullAccess</code> policy</li>
+                <li>Create access key (save the Secret!)</li>
+                <li>Verify sender email in SES console, OR</li>
+                <li>Request production access to send to any email</li>
+            </ol>
+            
+            <h4>AWS SES Configuration (.env)</h4>
+            <div class="env"># AWS SES Configuration
+AWS_ENABLED=true
+AWS_REGION=us-east-1
+AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
+AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/xxx
+AWS_SES_FROM_EMAIL=noreply@yourdomain.com</div>
+        </div>
+        
+        <div id="ngrok">
+            <h2>ngrok Setup</h2>
+            <div class="warn"><strong>Important:</strong> Without ngrok, phishing links won't work for external recipients.</div>
+            
+            <h3>Install</h3>
+            <pre><code>curl -sSL https://ngrok-agent.s3.amazonaws.com/ngrok.asc \
+  | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null \
+  && echo "deb https://ngrok-agent.s3.amazonaws.com bookworm main" \
+  | sudo tee /etc/apt/sources.list.d/ngrok.list \
+  && sudo apt update \
+  && sudo apt install ngrok</code></pre>
+            
+            <h3>Start (Port 8081)</h3>
+            <pre><code>ngrok http 8081</code></pre>
+            <p>Output:</p>
+            <div class="env">Forwarding → https://abcd-1234.ngrok-free.app → http://localhost:8081</div>
+            
+            <h3>Update .env</h3>
+            <div class="env">PHISHING_URL=https://abcd-1234.ngrok-free.app</div>
+            
+            <div class="tip">Note: ngrok URLs change on restart. Update .env each time.</div>
+        </div>
+        
+        <div id="run">
+            <h2>Run RedHook</h2>
+            <pre><code>./start.sh</code></pre>
+            
+            <h3>Access Dashboard</h3>
+            <div class="env">URL: http://localhost:8080
+Email: admin@redhook.local
+Password: changeme123</div>
+            
+            <h3>Health Check</h3>
+            <pre><code>curl http://localhost:8080/health</code></pre>
+        </div>
+        
+        <div id="campaign">
+            <h2>Create First Campaign</h2>
+            
+            <h3>1. Login</h3>
+            <pre><code>TOKEN=$(curl -s -X POST http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@redhook.local","password":"changeme123"}' | jq -r '.token')
+echo $TOKEN</code></pre>
+            
+            <h3>2. Add User</h3>
+            <pre><code>curl -X POST http://localhost:8080/api/users \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"email":"target@company.com","name":"Target User","department":"IT","password":"test123"}'</code></pre>
+            
+            <h3>3. Create Campaign</h3>
+            <pre><code>curl -X POST http://localhost:8080/api/campaigns \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"name":"Test Campaign","template_id":1,"landing_page_id":1}'</code></pre>
+            
+            <h3>4. Send</h3>
+            <pre><code>curl -X POST http://localhost:8080/api/send \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"campaign_id":1,"recipients":[1]}'</code></pre>
+            
+            <h3>5. Results</h3>
+            <pre><code>curl http://localhost:8080/api/campaigns/1/stats -H "Authorization: Bearer $TOKEN"</code></pre>
+        </div>
+        
+        <div id="env">
+            <h2>Environment Variables</h2>
+            <table>
+                <tr><th>Variable</th><th>Required</th><th>Description</th></tr>
+                <tr><td>DB_HOST</td><td>Yes</td><td>Database host</td></tr>
+                <tr><td>DB_USER</td><td>Yes</td><td>Database user</td></tr>
+                <tr><td>DB_PASSWORD</td><td>Yes</td><td>Database password</td></tr>
+                <tr><td colspan="3"><strong>Email Provider (Choose One)</strong></td></tr>
+                <tr><td>RESEND_ENABLED</td><td>No</td><td>Enable Resend (true/false)</td></tr>
+                <tr><td>RESEND_API_KEY</td><td>If Resend</td><td>Resend API key</td></tr>
+                <tr><td>RESEND_FROM_EMAIL</td><td>If Resend</td><td>Sender email (use verified domain)</td></tr>
+                <tr><td>AWS_ENABLED</td><td>No</td><td>Enable AWS SES (true/false)</td></tr>
+                <tr><td>AWS_REGION</td><td>If AWS</td><td>AWS region</td></tr>
+                <tr><td>AWS_ACCESS_KEY_ID</td><td>If AWS</td><td>AWS access key</td></tr>
+                <tr><td>AWS_SECRET_ACCESS_KEY</td><td>If AWS</td><td>AWS secret key</td></tr>
+                <tr><td>AWS_SES_FROM_EMAIL</td><td>If AWS</td><td>SES sender email</td></tr>
+                <tr><td colspan="3"><strong>Other</strong></td></tr>
+                <tr><td>PHISHING_URL</td><td>Yes</td><td>Public phishing URL (ngrok)</td></tr>
+                <tr><td>JWT_SECRET</td><td>Yes</td><td>JWT secret key</td></tr>
+            </table>
+        </div>
+        
+        <div id="troubleshoot">
+            <h2>Troubleshooting</h2>
+            
+            <h3>Email Not Sending</h3>
+            <ul>
+                <li><strong>Resend:</strong> Domain not verified - verify at resend.com/domains</li>
+                <li><strong>AWS SES:</strong> In sandbox mode - request production access</li>
+                <li>Check logs: <code>tail -f /tmp/redhook.log</code></li>
+            </ul>
+            
+            <h3>Invalid Credentials</h3>
+            <ul>
+                <li>Verify API key is correct in .env</li>
+                <li>Restart backend after .env changes</li>
+            </ul>
+            
+            <h3>Phishing Links Not Working</h3>
+            <ul>
+                <li>Ensure ngrok is running on port 8081</li>
+                <li>Update PHISHING_URL in .env to match ngrok URL</li>
+            </ul>
+        </div>
+        
+        <footer>
+            <p>RedHook - Security Testing Platform</p>
+        </footer>
+    </div>
+</body>
+</html>

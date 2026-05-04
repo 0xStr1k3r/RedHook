@@ -3,243 +3,317 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PhishGuard - Phishing Awareness Platform</title>
+    <title>RedHook - Admin</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; }
-        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-        .header { background: #1a1a2e; color: white; padding: 20px; margin-bottom: 20px; }
-        .header h1 { font-size: 24px; }
-        .card { background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 20px; }
-        .stat-card { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .stat-card .value { font-size: 32px; font-weight: bold; color: #1a1a2e; }
-        .stat-card .label { color: #666; margin-top: 5px; }
-        .btn { background: #1a1a2e; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 14px; }
-        .btn:hover { background: #16213e; }
+        :root { --bg: #0f0f23; --bg2: #1a1a2e; --border: #2d2d44; --text: #e0e0e0; --text2: #888; --accent: #6366f1; --green: #10b981; --red: #ef4444; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+        
+        .header { background: var(--bg2); padding: 20px 30px; display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); }
+        .header h1 { font-size: 22px; }
+        
+        .nav { display: flex; gap: 5px; padding: 15px 30px; background: var(--bg2); border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+        .nav button { background: transparent; border: none; color: var(--text2); padding: 10px 20px; cursor: pointer; border-radius: 6px; font-size: 14px; }
+        .nav button:hover { background: var(--border); }
+        .nav button.active { background: var(--accent); color: white; }
+        
+        .container { padding: 30px; max-width: 1100px; margin: 0 auto; }
+        
+        .page { display: none; }
+        .page.active { display: block; }
+        
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 15px; margin-bottom: 30px; }
+        .stat-card { background: var(--bg2); padding: 18px; border-radius: 10px; text-align: center; }
+        .stat-card .value { font-size: 28px; font-weight: 700; color: var(--accent); }
+        .stat-card .label { color: var(--text2); font-size: 12px; margin-top: 5px; }
+        
+        .card { background: var(--bg2); border-radius: 10px; padding: 22px; margin-bottom: 20px; }
+        .card h3 { margin-bottom: 18px; font-size: 15px; }
+        
         .table { width: 100%; border-collapse: collapse; }
-        .table th, .table td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
-        .table th { background: #f8f9fa; font-weight: 600; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: 500; }
-        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; }
-        .badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 12px; }
-        .badge-success { background: #d4edda; color: #155724; }
-        .badge-warning { background: #fff3cd; color: #856404; }
-        .badge-danger { background: #f8d7da; color: #721c24; }
-        .nav { display: flex; gap: 10px; padding: 10px 20px; background: white; border-bottom: 1px solid #eee; }
-        .nav a { text-decoration: none; color: #666; padding: 10px 20px; }
-        .nav a.active { color: #1a1a2e; border-bottom: 2px solid #1a1a2e; }
+        .table th { text-align: left; padding: 10px; color: var(--text2); font-size: 12px; border-bottom: 1px solid var(--border); }
+        .table td { padding: 10px; border-bottom: 1px solid var(--border); font-size: 13px; }
+        
+        .badge { padding: 3px 8px; border-radius: 12px; font-size: 11px; }
+        .badge.success { background: rgba(16, 185, 129, 0.2); color: var(--green); }
+        
+        .btn { background: var(--accent); color: white; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+        .btn.green { background: var(--green); }
+        .btn.danger { background: var(--red); }
+        
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; margin-bottom: 5px; color: var(--text2); font-size: 12px; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 13px; }
+        .form-group textarea { min-height: 80px; font-family: monospace; resize: vertical; }
+        
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
+        
+        .checkbox-list { max-height: 220px; overflow-y: auto; border: 1px solid var(--border); border-radius: 6px; }
+        .checkbox-item { display: flex; gap: 10px; padding: 8px; border-bottom: 1px solid var(--border); font-size: 13px; }
+        
+        .wizard { background: var(--bg2); border-radius: 12px; padding: 22px; }
+        .wizard-step { display: flex; gap: 14px; margin-bottom: 22px; padding-bottom: 18px; border-bottom: 1px solid var(--border); }
+        .step-num { background: var(--accent); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; flex-shrink: 0; }
+        
+        .info-box { background: rgba(99, 102, 241, 0.1); border: 1px solid var(--accent); padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 13px; }
+        
+        .login-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .login-box { background: var(--bg2); padding: 35px; border-radius: 12px; width: 320px; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>PhishGuard - Phishing Awareness Platform</h1>
+    <div id="login-screen" class="login-screen">
+        <div class="login-box">
+            <h2 style="text-align:center;margin-bottom:22px;">RedHook</h2>
+            <div class="form-group"><label>Email</label><input type="email" id="login-email"></div>
+            <div class="form-group"><label>Password</label><input type="password" id="login-password"></div>
+            <button class="btn" style="width:100%" onclick="login()">Login</button>
+        </div>
     </div>
-    <div class="container">
+    
+    <div id="app" style="display:none;">
+        <div class="header"><h1>RedHook</h1></div>
+        
         <div class="nav">
-            <a href="#" class="active" onclick="showPage('dashboard')">Dashboard</a>
-            <a href="#" onclick="showPage('campaigns')">Campaigns</a>
-            <a href="#" onclick="showPage('users')">Users</a>
-            <a href="#" onclick="showPage('templates')">Templates</a>
-            <a href="#" onclick="showPage('analytics')">Analytics</a>
+            <button class="active" onclick="showPage('dashboard')">Dashboard</button>
+            <button onclick="showPage('users')">Users</button>
+            <button onclick="showPage('send')">Send</button>
+            <button onclick="showPage('credentials')">Captured</button>
+            <button onclick="logout()">Logout</button>
         </div>
         
-        <div id="dashboard-page">
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="value" id="total-users">-</div>
-                    <div class="label">Total Users</div>
+        <div class="container">
+            <div id="page-dashboard" class="page active">
+                <div class="info-box">
+                    <strong>Email:</strong> AWS SES | 
+                    <strong>URL:</strong> <span id="phishing-url"></span>
                 </div>
-                <div class="stat-card">
-                    <div class="value" id="total-campaigns">-</div>
-                    <div class="label">Campaigns</div>
-                </div>
-                <div class="stat-card">
-                    <div class="value" id="open-rate">-</div>
-                    <div class="label">Open Rate</div>
-                </div>
-                <div class="stat-card">
-                    <div class="value" id="click-rate">-</div>
-                    <div class="label">Click Rate</div>
+                <div class="stats-grid">
+                    <div class="stat-card"><div class="value" id="stat-users">0</div><div class="label">Users</div></div>
+                    <div class="stat-card"><div class="value" id="stat-campaigns">0</div><div class="label">Campaigns</div></div>
+                    <div class="stat-card"><div class="value" id="stat-sent">0</div><div class="label">Sent</div></div>
+                    <div class="stat-card"><div class="value" id="stat-creds">0</div><div class="label">Credentials</div></div>
                 </div>
             </div>
             
-            <div class="card">
-                <h2 style="margin-bottom: 15px;">Create Campaign</h2>
-                <button class="btn" onclick="showCampaignForm()">+ New Campaign</button>
+            <div id="page-users" class="page">
+                <div class="card">
+                    <h3>Add User</h3>
+                    <div class="grid-2">
+                        <div class="form-group"><label>Name</label><input type="text" id="user-name"></div>
+                        <div class="form-group"><label>Email</label><input type="email" id="user-email"></div>
+                    </div>
+                    <div class="grid-2">
+                        <div class="form-group"><label>Department</label><input type="text" id="user-dept"></div>
+                        <div class="form-group"><label>Password</label><input type="text" id="user-password"></div>
+                    </div>
+                    <button class="btn" onclick="addUser()">Add User</button>
+                </div>
+                <div class="card">
+                    <h3>Users</h3>
+                    <table class="table"><thead><tr><th>Name</th><th>Email</th><th>Dept</th><th></th></tr></thead>
+                    <tbody id="users-list"></tbody></table>
+                </div>
             </div>
-        </div>
-        
-        <div id="campaigns-page" style="display: none;">
-            <div class="card">
-                <h2 style="margin-bottom: 15px;">Campaigns</h2>
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Status</th>
-                            <th>Sent</th>
-                            <th>Open Rate</th>
-                            <th>Click Rate</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="campaigns-list"></tbody>
-                </table>
+            
+            <div id="page-send" class="page">
+                <div class="wizard">
+                    <h3 style="margin-bottom:18px;">Send Email</h3>
+                    
+                    <div class="wizard-step">
+                        <div class="step-num">1</div>
+                        <div style="flex:1;">
+                            <h4>Select Campaign</h4>
+                            <select id="send-campaign" onchange="showCampaignInfo()" style="margin-top:8px;">
+                                <option value="">Choose campaign...</option>
+                            </select>
+                            <div id="campaign-info" style="display:none;margin-top:8px;font-size:12px;color:var(--text2);"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="wizard-step">
+                        <div class="step-num">2</div>
+                        <div style="flex:1;">
+                            <h4>Select Landing Page</h4>
+                            <select id="send-page" onchange="showPagePreview()">
+                                <option value="">Choose page...</option>
+                            </select>
+                            <div id="page-preview-url" style="display:none;margin-top:8px;font-size:12px;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="wizard-step">
+                        <div class="step-num">3</div>
+                        <div style="flex:1;">
+                            <h4>Customize Email (Optional)</h4>
+                            <div class="form-group"><label>Subject Line</label><input type="text" id="custom-subject" placeholder="Use default from template"></div>
+                            <div class="form-group"><label>From Name</label><input type="text" id="custom-from" placeholder="e.g., IT Support"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="wizard-step">
+                        <div class="step-num">4</div>
+                        <div style="flex:1;">
+                            <h4>Select Recipients</h4>
+                            <div style="margin:8px 0;">
+                                <button class="btn" style="padding:5px 10px;font-size:11px;" onclick="selectAll()">All</button>
+                                <button class="btn" style="padding:5px 10px;font-size:11px;" onclick="deselectAll()">None</button>
+                            </div>
+                            <div class="checkbox-list" id="recipients-list"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="wizard-step" style="border:none;">
+                        <div class="step-num">5</div>
+                        <div style="flex:1;">
+                            <h4>Send</h4>
+                            <div class="form-group"><label>Provider</label>
+                                <select id="email-provider"><option value="ses">AWS SES</option><option value="resend">Resend</option></select>
+                            </div>
+                            <div id="send-result" style="margin-top:10px;"></div>
+                            <button class="btn green" onclick="doSend()">Send Emails</button>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-        
-        <div id="users-page" style="display: none;">
-            <div class="card">
-                <h2 style="margin-bottom: 15px;">Users</h2>
-                <button class="btn" onclick="showAddUserForm()">+ Add User</button>
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Department</th>
-                            <th>Role</th>
-                        </tr>
-                    </thead>
-                    <tbody id="users-list"></tbody>
-                </table>
-            </div>
-        </div>
-        
-        <div id="templates-page" style="display: none;">
-            <div class="card">
-                <h2 style="margin-bottom: 15px;">Email Templates</h2>
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Subject</th>
-                            <th>Category</th>
-                        </tr>
-                    </thead>
-                    <tbody id="templates-list"></tbody>
-                </table>
-            </div>
-        </div>
-        
-        <div id="analytics-page" style="display: none;">
-            <div class="card">
-                <h2 style="margin-bottom: 15px;">Analytics</h2>
-                <div id="analytics-data">Loading...</div>
+            
+            <div id="page-credentials" class="page">
+                <div class="card">
+                    <h3>Captured Credentials</h3>
+                    <table class="table"><thead><tr><th>Time</th><th>Email</th><th>Campaign</th><th>Data</th></tr></thead>
+                    <tbody id="credentials-list"></tbody></table>
+                </div>
             </div>
         </div>
     </div>
     
     <script>
-        const API_URL = '/api';
+        const API = '';
+        const PHISHING_URL = 'https://cognition-unearth-consent.ngrok-free.dev';
         let token = localStorage.getItem('token');
+        let campaignsData = [], pagesData = [];
         
-        async function apiCall(endpoint, options = {}) {
+        async function api(endpoint, options = {}) {
             const headers = { 'Content-Type': 'application/json' };
             if (token) headers['Authorization'] = `Bearer ${token}`;
-            const response = await fetch(`${API_URL}${endpoint}`, { ...options, headers });
-            return response.json();
-        }
-        
-        function showPage(page) {
-            document.querySelectorAll('[id$="-page"]').forEach(p => p.style.display = 'none');
-            document.getElementById(`${page}-page`).style.display = 'block';
+            return fetch(`${API}${endpoint}`, { ...options, headers }).then(r => r.json());
         }
         
         async function login() {
-            const email = prompt('Email:');
-            const password = prompt('Password:');
-            const data = await apiCall('/auth/login', {
-                method: 'POST',
-                body: JSON.stringify({ email, password })
-            });
-            if (data.token) {
-                token = data.token;
-                localStorage.setItem('token', token);
-                loadDashboard();
-            } else {
-                alert('Login failed');
-            }
+            const data = await api('/api/auth/login', { method: 'POST', body: JSON.stringify({ email: document.getElementById('login-email').value, password: document.getElementById('login-password').value }) });
+            if (data.token) { token = data.token; localStorage.setItem('token', token); document.getElementById('login-screen').style.display = 'none'; document.getElementById('app').style.display = 'block'; loadDashboard(); }
+            else alert('Login failed');
+        }
+        
+        function logout() { localStorage.removeItem('token'); location.reload(); }
+        
+        function showPage(page) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+            document.getElementById('page-' + page).classList.add('active');
+            event.target.classList.add('active');
+            if (page === 'dashboard') loadDashboard();
+            if (page === 'users') loadUsers();
+            if (page === 'send') loadSendPage();
+            if (page === 'credentials') loadCredentials();
         }
         
         async function loadDashboard() {
-            try {
-                const stats = await apiCall('/analytics/overview');
-                document.getElementById('total-users').textContent = stats.total_users || 0;
-                document.getElementById('total-campaigns').textContent = stats.total_campaigns || 0;
-                document.getElementById('open-rate').textContent = (stats.open_rate || 0).toFixed(1) + '%';
-                document.getElementById('click-rate').textContent = (stats.click_rate || 0).toFixed(1) + '%';
-            } catch (e) {
-                document.getElementById('total-users').textContent = 'Login required';
-            }
-        }
-        
-        async function loadCampaigns() {
-            const campaigns = await apiCall('/campaigns');
-            const tbody = document.getElementById('campaigns-list');
-            tbody.innerHTML = campaigns.map(c => `
-                <tr>
-                    <td>${c.name}</td>
-                    <td><span class="badge badge-${c.status === 'sent' ? 'success' : 'warning'}">${c.status}</span></td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>
-                        <button class="btn" style="padding: 5px 10px;" onclick="launchCampaign(${c.id})">Launch</button>
-                    </td>
-                </tr>
-            `).join('');
+            document.getElementById('phishing-url').textContent = PHISHING_URL;
+            const stats = await api('/api/analytics/overview');
+            document.getElementById('stat-users').textContent = stats.total_users || 0;
+            document.getElementById('stat-campaigns').textContent = stats.total_campaigns || 0;
+            document.getElementById('stat-sent').textContent = stats.total_emails_sent || 0;
+            document.getElementById('stat-creds').textContent = stats.total_submissions || 0;
         }
         
         async function loadUsers() {
-            const users = await apiCall('/users');
-            const tbody = document.getElementById('users-list');
-            tbody.innerHTML = users.map(u => `
-                <tr>
-                    <td>${u.name}</td>
-                    <td>${u.email}</td>
-                    <td>${u.department || '-'}</td>
-                    <td>${u.role}</td>
-                </tr>
-            `).join('');
+            const users = await api('/api/users');
+            document.getElementById('users-list').innerHTML = users.map(u => `<tr><td>${u.name}</td><td>${u.email}</td><td>${u.department||'-'}</td><td><button class="btn danger" style="padding:3px 8px;font-size:11px;" onclick="deleteUser(${u.id})">X</button></td></tr>`).join('');
         }
         
-        async function loadTemplates() {
-            const templates = await apiCall('/templates');
-            const tbody = document.getElementById('templates-list');
-            tbody.innerHTML = templates.map(t => `
-                <tr>
-                    <td>${t.name}</td>
-                    <td>${t.subject}</td>
-                    <td>${t.category || '-'}</td>
-                </tr>
-            `).join('');
+        async function addUser() {
+            const result = await api('/api/users', { method: 'POST', body: JSON.stringify({ name: document.getElementById('user-name').value, email: document.getElementById('user-email').value, department: document.getElementById('user-dept').value, password: document.getElementById('user-password').value }) });
+            if (result.id) { alert('Added!'); loadUsers(); }
         }
         
-        async function launchCampaign(id) {
-            if (confirm('Launch this campaign?')) {
-                await apiCall(`/campaigns/${id}/launch`, { method: 'POST' });
-                loadCampaigns();
+        async function deleteUser(id) { if (confirm('Delete?')) { await api(`/api/users/${id}`, { method: 'DELETE' }); loadUsers(); } }
+        
+        async function loadSendPage() {
+            campaignsData = await api('/api/campaigns');
+            const pages = await api('/api/pages');
+            const users = await api('/api/users');
+            
+            document.getElementById('send-campaign').innerHTML = '<option value="">Select campaign...</option>' + campaignsData.map(c => `<option value="${c.id}" data-tpl="${c.template_id}" data-page="${c.landing_page_id}">${c.name}</option>`).join('');
+            document.getElementById('send-page').innerHTML = '<option value="">Select landing page...</option>' + pages.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+            
+            document.getElementById('recipients-list').innerHTML = users.map(u => `<div class="checkbox-item"><input type="checkbox" class="user-check" value="${u.id}" id="u${u.id}"><label for="u${u.id}">${u.name} (${u.email})</label></div>`).join('');
+            
+            document.getElementById('send-result').innerHTML = '';
+        }
+        
+        function showCampaignInfo() {
+            const id = document.getElementById('send-campaign').value;
+            if (!id) { document.getElementById('campaign-info').style.display = 'none'; return; }
+            
+            const c = campaignsData.find(x => x.id == id);
+            if (c) {
+                const templates = document.getElementById('send-campaign').options;
+                let tplId = c.template_id;
+                api('/api/templates').then(tpls => {
+                    const tpl = tpls.find(t => t.id == tplId);
+                    if (tpl) {
+                        document.getElementById('campaign-info').innerHTML = '<strong>Template:</strong> ' + tpl.name + '<br><strong>Subject:</strong> ' + tpl.subject;
+                        document.getElementById('campaign-info').style.display = 'block';
+                    }
+                });
             }
         }
         
-        function showCampaignForm() {
-            alert('Campaign form - implement with modal or form page');
+        function showPagePreview() {
+            const id = document.getElementById('send-page').value;
+            if (!id) { document.getElementById('page-preview-url').style.display = 'none'; return; }
+            const url = PHISHING_URL + '/landing/preview/' + id;
+            document.getElementById('page-preview-url').innerHTML = '<a href="' + url + '" target="_blank" style="color:var(--accent);">Preview Page</a> | URL: ' + url;
+            document.getElementById('page-preview-url').style.display = 'block';
         }
         
-        function showAddUserForm() {
-            alert('Add user form - implement with modal or form page');
+        function selectAll() { document.querySelectorAll('.user-check').forEach(c => c.checked = true); }
+        function deselectAll() { document.querySelectorAll('.user-check').forEach(c => c.checked = false); }
+        
+        async function doSend() {
+            const campaignId = document.getElementById('send-campaign').value;
+            const landingPageId = document.getElementById('send-page').value;
+            const recipients = Array.from(document.querySelectorAll('.user-check:checked')).map(c => parseInt(c.value));
+            
+            if (!campaignId) { alert('Select campaign'); return; }
+            if (!landingPageId) { alert('Select landing page'); return; }
+            if (recipients.length === 0) { alert('Select recipients'); return; }
+            
+            document.getElementById('send-result').innerHTML = '<span style="color:var(--green);">Sending...</span>';
+            
+            // Update campaign with landing page first
+            await api('/api/campaigns/' + campaignId, { method: 'PUT', body: JSON.stringify({ landing_page_id: parseInt(landingPageId) }) });
+            
+            // Send
+            const result = await api('/api/send', { method: 'POST', body: JSON.stringify({ campaign_id: parseInt(campaignId), recipients }) });
+            
+            document.getElementById('send-result').innerHTML = '<span style="color:var(--green);">' + (result.message || 'Sent to ' + recipients.length + ' users!') + '</span>';
         }
         
-        window.onload = function() {
-            if (!token) {
-                login();
-            } else {
-                loadDashboard();
-            }
-        };
+        async function loadCredentials() {
+            const subs = await api('/api/submissions');
+            const users = await api('/api/users');
+            const campaigns = await api('/api/campaigns');
+            
+            const uMap = {}; users.forEach(u => uMap[u.id] = u.email);
+            const cMap = {}; campaigns.forEach(c => cMap[c.id] = c.name);
+            
+            document.getElementById('credentials-list').innerHTML = subs.map(s => `<tr><td>${new Date(s.submitted_at).toLocaleString()}</td><td>${uMap[s.user_id]||'Unknown'}</td><td>${cMap[s.campaign_id]||'-'}</td><td>${s.data_pattern || 'credentials'}</td></tr>`).join('') || '<tr><td colspan="4">No credentials captured</td></tr>';
+        }
+        
+        if (token) { document.getElementById('login-screen').style.display = 'none'; document.getElementById('app').style.display = 'block'; loadDashboard(); }
     </script>
 </body>
 </html>
